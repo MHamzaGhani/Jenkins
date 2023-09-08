@@ -12,19 +12,30 @@ async def get_result():
         return "Choosni is a ditcher"
 
 
+app = FastAPI()
+
 @app.post("/upload/")
 async def upload_file(file: UploadFile = File(...)):
-        df=pd.read_csv(file.file,error_bad_lines=False)
-        df=df[['Date','Primary Type','Description','Arrest','Domestic']]
-        df['Date']=pd.to_datetime(df['Date'],format='%m/%d/%Y %I:%M:%S %p')
-        df.index=pd.DatetimeIndex(df.Date)
-        df.drop("Date",axis=1,inplace=True)
-        model_data=df.resample('M').size().reset_index()
-        model_data.rename(columns={"Date":"ds",0:"y"},inplace=True)
-        model=Prophet()
+    try:
+        # Attempt to read the CSV file
+        df = pd.read_csv(file.file)
+        
+        # Perform your data processing
+        df = df[['Date','Primary Type','Description','Arrest','Domestic']]
+        df['Date'] = pd.to_datetime(df['Date'], format='%m/%d/%Y %H:%M')
+        df.index = pd.DatetimeIndex(df['Date'])
+        df.drop("Date", axis=1, inplace=True)
+        model_data = df.resample('M').size().reset_index()
+        model_data.rename(columns={"Date":"ds",0:"y"}, inplace=True)
+        model = Prophet()
         model.fit(model_data)
         joblib.dump(model, "trained_prophet_model.pkl")
+        
         return JSONResponse(content={"message": "Model trained and saved."})
+    except ParserError as e:
+        # Handle the parsing error
+        return JSONResponse(content={"error": f"Error parsing CSV file: {str(e)}"})
+
 
 
 
