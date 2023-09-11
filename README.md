@@ -16,7 +16,7 @@ This repository contains code for building a predictive model using Facebook Pro
 1. **Clone this repository:**
 
     ```bash
-https://github.com/MHamzaGhani/Jenkins.git
+    https://github.com/MHamzaGhani/Jenkins.git
     ```
 
 2. **Install the required Python packages:**
